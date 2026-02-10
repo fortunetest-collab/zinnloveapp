@@ -1,0 +1,1148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Zinnhub Love App - Share Your Heart</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=Crimson+Text:ital,wght@0,400;0,600;1,400&display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            overflow-x: hidden;
+            background: linear-gradient(135deg, #000000 0%, #1a1a1a 50%, #0d0d0d 100%);
+            min-height: 100vh;
+        }
+
+        #loading {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: #D4AF37;
+            font-family: 'Playfair Display', serif;
+            font-size: 24px;
+            text-align: center;
+        }
+        
+        @keyframes floatHeart {
+            0% {
+                transform: translateY(100vh) translateX(0) rotate(0deg);
+                opacity: 0;
+            }
+            10% {
+                opacity: 1;
+            }
+            90% {
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(-100vh) translateX(100px) rotate(360deg);
+                opacity: 0;
+            }
+        }
+        
+        @keyframes pulse {
+            0%, 100% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(1.15);
+            }
+        }
+        
+        @keyframes glow {
+            0%, 100% {
+                box-shadow: 0 0 20px rgba(212, 175, 55, 0.3),
+                            0 0 40px rgba(212, 175, 55, 0.2),
+                            0 0 60px rgba(212, 175, 55, 0.1);
+            }
+            50% {
+                box-shadow: 0 0 30px rgba(212, 175, 55, 0.5),
+                            0 0 60px rgba(212, 175, 55, 0.4),
+                            0 0 90px rgba(212, 175, 55, 0.3);
+            }
+        }
+        
+        @keyframes sparkle {
+            0%, 100% {
+                opacity: 0;
+                transform: scale(0) rotate(0deg);
+            }
+            50% {
+                opacity: 1;
+                transform: scale(1) rotate(180deg);
+            }
+        }
+        
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(40px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        @keyframes shimmer {
+            0% {
+                background-position: -1000px 0;
+            }
+            100% {
+                background-position: 1000px 0;
+            }
+        }
+        
+        @keyframes heartbeat {
+            0%, 100% {
+                transform: scale(1);
+            }
+            10% {
+                transform: scale(1.2);
+            }
+            20% {
+                transform: scale(1);
+            }
+            30% {
+                transform: scale(1.15);
+            }
+            40% {
+                transform: scale(1);
+            }
+        }
+        
+        @keyframes float {
+            0%, 100% {
+                transform: translateY(0px) rotate(0deg);
+            }
+            25% {
+                transform: translateY(-15px) rotate(3deg);
+            }
+            50% {
+                transform: translateY(-25px) rotate(-3deg);
+            }
+            75% {
+                transform: translateY(-15px) rotate(2deg);
+            }
+        }
+        
+        .floating-heart {
+            position: fixed;
+            animation: floatHeart linear infinite;
+            pointer-events: none;
+            z-index: 1;
+            font-size: 24px;
+            filter: drop-shadow(0 0 10px rgba(212, 175, 55, 0.3));
+        }
+        
+        .sparkle {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            background: radial-gradient(circle, #D4AF37 0%, transparent 70%);
+            border-radius: 50%;
+            animation: sparkle 2s ease-in-out infinite;
+            pointer-events: none;
+        }
+        
+        .fadeInUp {
+            animation: fadeInUp 0.8s ease-out;
+        }
+        
+        .glow-button {
+            animation: glow 2s ease-in-out infinite;
+        }
+        
+        .pulse {
+            animation: pulse 2s ease-in-out infinite;
+        }
+        
+        .heartbeat {
+            animation: heartbeat 1.5s ease-in-out infinite;
+        }
+        
+        .float {
+            animation: float 3s ease-in-out infinite;
+        }
+        
+        .shimmer-bg {
+            background: linear-gradient(
+                90deg,
+                rgba(212, 175, 55, 0.05) 0%,
+                rgba(212, 175, 55, 0.2) 50%,
+                rgba(212, 175, 55, 0.05) 100%
+            );
+            background-size: 1000px 100%;
+            animation: shimmer 3s linear infinite;
+        }
+    </style>
+</head>
+<body>
+    <div id="loading">Loading Zinnhub Love App... 💝</div>
+    <div id="root"></div>
+    
+    <!-- Load React and dependencies -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lz-string/1.5.0/lz-string.min.js"></script>
+    
+    <script type="text/babel">
+        // Hide loading message once React loads
+        document.getElementById('loading').style.display = 'none';
+        
+        const { useState, useEffect } = React;
+
+        // Zinnhub Logo
+        const ZINNHUB_LOGO = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 200'%3E%3Crect width='200' height='200' rx='20' fill='%23000'/%3E%3Cpath d='M60 60 L140 60 L60 110 L140 110 L60 140 L140 140 L60 60' stroke='%23D4AF37' stroke-width='8' fill='none'/%3E%3C/svg%3E";
+
+        function ZinnhubLoveApp() {
+            const [page, setPage] = useState('welcome');
+            const [senderName, setSenderName] = useState('');
+            const [recipientName, setRecipientName] = useState('');
+            const [uploadedImage, setUploadedImage] = useState(null);
+            const [messageIndex, setMessageIndex] = useState(0);
+            const [noButtonVisible, setNoButtonVisible] = useState(true);
+            const [generatedLink, setGeneratedLink] = useState('');
+            const [aiMessages, setAiMessages] = useState([]);
+            const [isGenerating, setIsGenerating] = useState(false);
+            const [floatingHearts, setFloatingHearts] = useState([]);
+
+            // Check for shared link on load
+            useEffect(() => {
+                const loadSharedMessage = () => {
+                    const hash = window.location.hash.substring(1);
+                    if (hash) {
+                        try {
+                            // Decode the compressed data from URL
+                            const decompressed = LZString.decompressFromEncodedURIComponent(hash);
+                            if (decompressed) {
+                                const data = JSON.parse(decompressed);
+                                setSenderName(data.sender);
+                                setRecipientName(data.recipient);
+                                setUploadedImage(data.image);
+                                setAiMessages(data.messages);
+                                setPage('do-you-love-me');
+                            }
+                        } catch (error) {
+                            console.error('Error loading shared message:', error);
+                            console.log('Hash received:', hash);
+                        }
+                    }
+                };
+                loadSharedMessage();
+            }, []);
+
+            // Create floating hearts continuously
+            useEffect(() => {
+                const interval = setInterval(() => {
+                    const heart = {
+                        id: Date.now() + Math.random(),
+                        left: Math.random() * 100,
+                        duration: 8 + Math.random() * 4,
+                        delay: Math.random() * 2,
+                        size: 20 + Math.random() * 30,
+                        emoji: ['❤️', '💕', '💖', '💗', '💝', '💘'][Math.floor(Math.random() * 6)]
+                    };
+                    
+                    setFloatingHearts(prev => [...prev.slice(-20), heart]);
+                }, 600);
+                
+                return () => clearInterval(interval);
+            }, []);
+
+            // Generate AI messages
+            const generateMessages = async (name, senderName, hasImage) => {
+                setIsGenerating(true);
+                
+                // Beautiful fallback messages
+                const fallbackMessages = [
+                    `My dearest ${name}, from the moment our eyes first met, my world transformed into something magical. You've taught me that love isn't just a feeling—it's finding home in another person's smile, warmth in their embrace, and forever in their eyes. Every day with you feels like unwrapping a precious gift I never want to let go of. You are my heart's deepest wish come true.`,
+                    
+                    `${name}, I never believed in soulmates until I found you. You're the melody my heart was searching for, the missing piece that makes everything make sense. When I'm with you, time stops and the world fades away, leaving just us in our own beautiful universe. Your laughter is my favorite song, your happiness my greatest treasure. I love you more than words could ever capture.`,
+                    
+                    `To my beautiful ${name}, you've filled my life with colors I never knew existed and dreams I never dared to dream. Every moment spent loving you is a moment cherished, every memory with you is a treasure I'll hold forever. You make the ordinary extraordinary and the impossible possible. Thank you for being you, for choosing me, and for making every single day feel like a fairytale. Forever and always, I am yours.`
+                ];
+                
+                setAiMessages(fallbackMessages);
+                setIsGenerating(false);
+                return fallbackMessages;
+            };
+
+            const handleImageUpload = (e) => {
+                const file = e.target.files[0];
+                if (file && file.size <= 2 * 1024 * 1024) {
+                    const reader = new FileReader();
+                    reader.onload = (event) => {
+                        setUploadedImage(event.target.result);
+                    };
+                    reader.readAsDataURL(file);
+                } else {
+                    alert('Please select an image under 2MB for best link compatibility');
+                }
+            };
+
+            const createLink = async () => {
+                if (!senderName || !recipientName) return;
+                
+                // Generate messages first
+                const messages = await generateMessages(recipientName, senderName, !!uploadedImage);
+                
+                // Create data object
+                const messageData = {
+                    sender: senderName,
+                    recipient: recipientName,
+                    image: uploadedImage || ZINNHUB_LOGO,
+                    messages: messages,
+                    timestamp: Date.now()
+                };
+                
+                // Compress and encode the data into URL
+                const jsonString = JSON.stringify(messageData);
+                const compressed = LZString.compressToEncodedURIComponent(jsonString);
+                
+                // Create shareable link
+                const baseUrl = window.location.href.split('#')[0];
+                const shareLink = `${baseUrl}#${compressed}`;
+                
+                setGeneratedLink(shareLink);
+                setPage('link-created');
+            };
+
+            const handleNoClick = () => {
+                setNoButtonVisible(false);
+                setTimeout(() => setNoButtonVisible(true), 3000);
+            };
+
+            return (
+                <div style={styles.container}>
+                    {/* Floating Hearts Animation */}
+                    {floatingHearts.map(heart => (
+                        <div
+                            key={heart.id}
+                            className="floating-heart"
+                            style={{
+                                left: `${heart.left}%`,
+                                animationDuration: `${heart.duration}s`,
+                                animationDelay: `${heart.delay}s`,
+                                fontSize: `${heart.size}px`,
+                            }}
+                        >
+                            {heart.emoji}
+                        </div>
+                    ))}
+
+                    {/* Welcome Page */}
+                    {page === 'welcome' && (
+                        <div style={styles.page} className="fadeInUp">
+                            {/* Sparkles */}
+                            {[...Array(15)].map((_, i) => (
+                                <div
+                                    key={i}
+                                    className="sparkle"
+                                    style={{
+                                        left: `${Math.random() * 100}%`,
+                                        top: `${Math.random() * 100}%`,
+                                        animationDelay: `${Math.random() * 2}s`,
+                                    }}
+                                />
+                            ))}
+                            
+                            <div className="pulse" style={styles.logoContainer}>
+                                <div style={styles.logoGlow}></div>
+                                <span style={styles.logoText}>Z</span>
+                            </div>
+                            
+                            <h1 style={styles.title} className="shimmer-bg">
+                                Zinnhub Love App
+                            </h1>
+                            
+                            <p style={styles.subtitle} className="float">
+                                ✨ Create magical love messages that touch the soul ✨
+                            </p>
+                            
+                            <p style={styles.description}>
+                                Share your deepest feelings with someone special through<br/>
+                                personalized love messages that speak from the heart
+                            </p>
+                            
+                            <button 
+                                onClick={() => setPage('create')} 
+                                style={styles.primaryButton}
+                                className="glow-button"
+                            >
+                                <span style={styles.buttonIcon}>💝</span>
+                                Begin Your Love Story
+                                <span style={styles.buttonIcon}>💝</span>
+                            </button>
+                            
+                            <div style={styles.features}>
+                                <div style={styles.feature} className="fadeInUp">
+                                    <span style={styles.featureIcon}>📸</span>
+                                    <p>Photo Sharing</p>
+                                </div>
+                                <div style={styles.feature} className="fadeInUp">
+                                    <span style={styles.featureIcon}>🔗</span>
+                                    <p>Unique Links</p>
+                                </div>
+                                <div style={styles.feature} className="fadeInUp">
+                                    <span style={styles.featureIcon}>💌</span>
+                                    <p>Heartfelt Messages</p>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Create Page */}
+                    {page === 'create' && (
+                        <div style={styles.page} className="fadeInUp">
+                            <h2 style={styles.heading} className="heartbeat">
+                                💖 Create Your Love Message 💖
+                            </h2>
+                            
+                            <p style={styles.instructionText}>
+                                Pour your heart out and create a personalized<br/>
+                                love message in the most beautiful way possible
+                            </p>
+                            
+                            <button 
+                                onClick={() => setPage('input')} 
+                                style={styles.primaryButton}
+                                className="glow-button"
+                            >
+                                Start Creating ✨
+                            </button>
+                        </div>
+                    )}
+
+                    {/* Input Page */}
+                    {page === 'input' && (
+                        <div style={styles.page} className="fadeInUp">
+                            <h2 style={styles.heading}>Share Your Love Story</h2>
+                            
+                            <div style={styles.formContainer}>
+                                <div style={styles.inputGroup}>
+                                    <label style={styles.label}>Your Name</label>
+                                    <input
+                                        type="text"
+                                        placeholder="Enter your beautiful name..."
+                                        value={senderName}
+                                        onChange={(e) => setSenderName(e.target.value)}
+                                        style={styles.input}
+                                        className="shimmer-bg"
+                                    />
+                                </div>
+                                
+                                <div style={styles.inputGroup}>
+                                    <label style={styles.label}>Your Lover's Name</label>
+                                    <input
+                                        type="text"
+                                        placeholder="The one who holds your heart..."
+                                        value={recipientName}
+                                        onChange={(e) => setRecipientName(e.target.value)}
+                                        style={styles.input}
+                                        className="shimmer-bg"
+                                    />
+                                </div>
+                                
+                                <div style={styles.uploadSection}>
+                                    <label style={styles.uploadLabel}>
+                                        <input
+                                            type="file"
+                                            accept="image/*"
+                                            onChange={handleImageUpload}
+                                            style={{ display: 'none' }}
+                                        />
+                                        <span style={styles.uploadIcon}>
+                                            {uploadedImage ? '✓' : '📷'}
+                                        </span>
+                                        <span>
+                                            {uploadedImage 
+                                                ? 'Beautiful photo added! ✨' 
+                                                : 'Add a cherished photo (Optional)'}
+                                        </span>
+                                    </label>
+                                    
+                                    {uploadedImage && (
+                                        <div style={styles.imagePreview}>
+                                            <img src={uploadedImage} style={styles.previewImg} alt="Preview" />
+                                            <button 
+                                                onClick={() => setUploadedImage(null)} 
+                                                style={styles.removeButton}
+                                            >
+                                                ✕ Remove
+                                            </button>
+                                        </div>
+                                    )}
+                                </div>
+                                
+                                <button 
+                                    onClick={createLink} 
+                                    style={{
+                                        ...styles.primaryButton,
+                                        opacity: (!senderName || !recipientName || isGenerating) ? 0.6 : 1,
+                                        cursor: (!senderName || !recipientName || isGenerating) ? 'not-allowed' : 'pointer'
+                                    }}
+                                    className={(!senderName || !recipientName || isGenerating) ? '' : 'glow-button'}
+                                    disabled={!senderName || !recipientName || isGenerating}
+                                >
+                                    {isGenerating ? (
+                                        <>
+                                            <span className="pulse">✨ Creating Magic...</span>
+                                        </>
+                                    ) : (
+                                        <>
+                                            <span style={styles.buttonIcon}>💝</span>
+                                            Generate Love Link
+                                            <span style={styles.buttonIcon}>💝</span>
+                                        </>
+                                    )}
+                                </button>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Link Created Page */}
+                    {page === 'link-created' && (
+                        <div style={styles.page} className="fadeInUp">
+                            <div className="heartbeat" style={styles.successIcon}>
+                                💌
+                            </div>
+                            
+                            <h2 style={styles.heading}>Your Love Link is Ready!</h2>
+                            
+                            <div style={styles.linkContainer} className="glow-button">
+                                <p style={styles.linkLabel}>Share this magical link:</p>
+                                <div style={styles.linkBox}>
+                                    <p style={styles.linkText}>{generatedLink}</p>
+                                </div>
+                                <button 
+                                    onClick={() => {
+                                        navigator.clipboard.writeText(generatedLink);
+                                        alert('Link copied! Share it with ' + recipientName + ' 💕');
+                                    }}
+                                    style={styles.copyButton}
+                                >
+                                    📋 Copy Link
+                                </button>
+                            </div>
+                            
+                            <p style={styles.shareText}>
+                                Send this to <span style={styles.highlight}>{recipientName}</span><br/>
+                                and watch their heart melt with joy ❤️
+                            </p>
+                            
+                            <button 
+                                onClick={() => setPage('do-you-love-me')} 
+                                style={styles.secondaryButton}
+                            >
+                                Preview the Magic ✨
+                            </button>
+                        </div>
+                    )}
+
+                    {/* Do You Love Me Page */}
+                    {page === 'do-you-love-me' && (
+                        <div style={styles.page} className="fadeInUp">
+                            <div style={styles.messageHeader}>
+                                <p style={styles.fromLabel}>You have a message from</p>
+                                <h3 style={styles.appName} className="pulse">Zinnhub Love App 💝</h3>
+                            </div>
+                            
+                            <div style={styles.questionContainer} className="float">
+                                <h1 style={styles.questionText}>
+                                    {recipientName},<br/>
+                                    Do you love me?
+                                </h1>
+                                
+                                <div style={styles.loveButtons}>
+                                    <button 
+                                        onClick={() => setPage('messages')} 
+                                        style={styles.yesButton}
+                                        className="glow-button heartbeat"
+                                    >
+                                        Yes! 💕💕💕
+                                    </button>
+                                    
+                                    {noButtonVisible && (
+                                        <button 
+                                            onClick={handleNoClick} 
+                                            style={styles.noButton}
+                                            className="pulse"
+                                        >
+                                            No
+                                        </button>
+                                    )}
+                                </div>
+                                
+                                {!noButtonVisible && (
+                                    <p style={styles.noHiddenText} className="fadeInUp">
+                                        There's only one answer... 💝
+                                    </p>
+                                )}
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Messages Page */}
+                    {page === 'messages' && (
+                        <div style={styles.page} className="fadeInUp">
+                            <div style={styles.messageCard} className="glow-button">
+                                <div style={styles.messageNumber}>
+                                    Message {messageIndex + 1} of 3
+                                </div>
+                                
+                                <p style={styles.messageContent}>
+                                    {aiMessages[messageIndex] || 'Loading your personalized message...'}
+                                </p>
+                                
+                                <p style={styles.signature}>
+                                    With all my love,<br/>
+                                    <span style={styles.senderSignature}>{senderName} 💕</span>
+                                </p>
+                            </div>
+                            
+                            <button 
+                                onClick={() => {
+                                    if (messageIndex < 2) {
+                                        setMessageIndex(messageIndex + 1);
+                                    } else {
+                                        setPage('final');
+                                    }
+                                }} 
+                                style={styles.primaryButton}
+                                className="glow-button"
+                            >
+                                {messageIndex < 2 ? 'Next Message →' : 'Final Surprise 💝'}
+                            </button>
+                        </div>
+                    )}
+
+                    {/* Final Page */}
+                    {page === 'final' && (
+                        <div style={styles.page} className="fadeInUp">
+                            <div style={styles.finalCard} className="glow-button">
+                                {uploadedImage && uploadedImage !== ZINNHUB_LOGO ? (
+                                    <div style={styles.finalImageContainer}>
+                                        <img src={uploadedImage} style={styles.finalImage} alt="Our love" />
+                                        <div style={styles.imageOverlay}>
+                                            <span className="heartbeat">💖</span>
+                                        </div>
+                                    </div>
+                                ) : (
+                                    <div style={styles.logoContainerFinal} className="pulse">
+                                        <span style={styles.logoTextLarge}>Z</span>
+                                    </div>
+                                )}
+                                
+                                <p style={styles.finalMessage}>
+                                    {aiMessages[2] || `${recipientName}, you are my everything, my forever, my always. I love you endlessly. 💕`}
+                                </p>
+                                
+                                <p style={styles.finalSignature}>
+                                    Forever yours,<br/>
+                                    <span style={styles.senderSignature}>{senderName}</span>
+                                </p>
+                            </div>
+                            
+                            <div style={styles.finalActions}>
+                                <button 
+                                    onClick={() => {
+                                        window.location.href = window.location.href.split('#')[0];
+                                        window.location.reload();
+                                    }} 
+                                    style={styles.primaryButton}
+                                    className="glow-button"
+                                >
+                                    Create Your Own Love Message 💝
+                                </button>
+                                
+                                <a 
+                                    href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(`I just created the most beautiful love message on Zinnhub! 💕 Express your love in a magical way ✨`)}&url=${encodeURIComponent(window.location.href.split('#')[0])}`}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    style={styles.twitterButton}
+                                    className="pulse"
+                                >
+                                    🐦 Share the Love on Twitter
+                                </a>
+                            </div>
+                            
+                            <div style={styles.footer}>
+                                <div style={styles.footerLogo}>Z</div>
+                                <p style={styles.footerText}>
+                                    Powered with ❤️ by <strong>Zinnhub.com</strong>
+                                </p>
+                            </div>
+                        </div>
+                    )}
+                </div>
+            );
+        }
+
+        const styles = {
+            container: {
+                minHeight: '100vh',
+                background: 'linear-gradient(135deg, #000000 0%, #1a1a1a 50%, #0d0d0d 100%)',
+                fontFamily: "'Playfair Display', serif",
+                position: 'relative',
+                overflow: 'hidden',
+            },
+            page: {
+                minHeight: '100vh',
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                justifyContent: 'center',
+                padding: '40px 20px',
+                position: 'relative',
+                zIndex: 2,
+            },
+            logoContainer: {
+                width: '120px',
+                height: '120px',
+                background: 'linear-gradient(135deg, #D4AF37 0%, #F4E4A6 100%)',
+                borderRadius: '50%',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                marginBottom: '30px',
+                position: 'relative',
+                boxShadow: '0 10px 40px rgba(212, 175, 55, 0.4)',
+            },
+            logoGlow: {
+                position: 'absolute',
+                width: '140px',
+                height: '140px',
+                borderRadius: '50%',
+                background: 'radial-gradient(circle, rgba(212, 175, 55, 0.3) 0%, transparent 70%)',
+            },
+            logoText: {
+                fontSize: '60px',
+                fontWeight: '900',
+                color: '#000',
+                position: 'relative',
+                zIndex: 1,
+            },
+            title: {
+                fontSize: '56px',
+                color: '#D4AF37',
+                marginBottom: '20px',
+                textAlign: 'center',
+                fontWeight: '900',
+                textShadow: '0 0 30px rgba(212, 175, 55, 0.6)',
+                letterSpacing: '2px',
+            },
+            subtitle: {
+                fontSize: '24px',
+                color: '#F4E4A6',
+                marginBottom: '20px',
+                textAlign: 'center',
+                fontFamily: "'Crimson Text', serif",
+                fontStyle: 'italic',
+                lineHeight: '1.6',
+            },
+            description: {
+                fontSize: '18px',
+                color: '#999',
+                marginBottom: '50px',
+                textAlign: 'center',
+                lineHeight: '1.8',
+                maxWidth: '600px',
+            },
+            features: {
+                display: 'flex',
+                gap: '40px',
+                marginTop: '60px',
+                flexWrap: 'wrap',
+                justifyContent: 'center',
+            },
+            feature: {
+                textAlign: 'center',
+                color: '#D4AF37',
+            },
+            featureIcon: {
+                fontSize: '40px',
+                display: 'block',
+                marginBottom: '10px',
+            },
+            heading: {
+                fontSize: '42px',
+                color: '#D4AF37',
+                marginBottom: '30px',
+                textAlign: 'center',
+                textShadow: '0 0 20px rgba(212, 175, 55, 0.4)',
+            },
+            instructionText: {
+                fontSize: '20px',
+                color: '#999',
+                marginBottom: '40px',
+                textAlign: 'center',
+                lineHeight: '1.6',
+            },
+            formContainer: {
+                width: '100%',
+                maxWidth: '500px',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '25px',
+            },
+            inputGroup: {
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '10px',
+            },
+            label: {
+                fontSize: '18px',
+                color: '#D4AF37',
+                fontWeight: '600',
+            },
+            input: {
+                width: '100%',
+                padding: '18px 20px',
+                fontSize: '18px',
+                border: '2px solid #D4AF37',
+                borderRadius: '12px',
+                background: 'rgba(0, 0, 0, 0.6)',
+                color: '#F4E4A6',
+                outline: 'none',
+                fontFamily: "'Crimson Text', serif",
+                transition: 'all 0.3s ease',
+            },
+            uploadSection: {
+                marginTop: '10px',
+            },
+            uploadLabel: {
+                display: 'flex',
+                alignItems: 'center',
+                gap: '15px',
+                padding: '18px 25px',
+                background: 'rgba(212, 175, 55, 0.15)',
+                border: '2px solid #D4AF37',
+                borderRadius: '12px',
+                color: '#D4AF37',
+                cursor: 'pointer',
+                fontSize: '17px',
+                transition: 'all 0.3s ease',
+            },
+            uploadIcon: {
+                fontSize: '28px',
+            },
+            imagePreview: {
+                marginTop: '15px',
+                position: 'relative',
+            },
+            previewImg: {
+                width: '100%',
+                maxHeight: '300px',
+                objectFit: 'cover',
+                borderRadius: '12px',
+                border: '2px solid #D4AF37',
+            },
+            removeButton: {
+                marginTop: '10px',
+                padding: '8px 20px',
+                background: 'rgba(255, 0, 0, 0.2)',
+                border: '1px solid #ff4444',
+                borderRadius: '8px',
+                color: '#ff6666',
+                cursor: 'pointer',
+                fontSize: '14px',
+            },
+            primaryButton: {
+                padding: '18px 45px',
+                fontSize: '22px',
+                background: 'linear-gradient(135deg, #D4AF37 0%, #F4E4A6 100%)',
+                color: '#000',
+                border: 'none',
+                borderRadius: '50px',
+                cursor: 'pointer',
+                fontFamily: "'Playfair Display', serif",
+                fontWeight: 'bold',
+                boxShadow: '0 8px 25px rgba(212, 175, 55, 0.4)',
+                transition: 'all 0.3s ease',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '10px',
+                justifyContent: 'center',
+                marginTop: '20px',
+            },
+            secondaryButton: {
+                padding: '15px 35px',
+                fontSize: '18px',
+                background: 'transparent',
+                color: '#D4AF37',
+                border: '2px solid #D4AF37',
+                borderRadius: '50px',
+                cursor: 'pointer',
+                fontFamily: "'Playfair Display', serif",
+                marginTop: '20px',
+            },
+            buttonIcon: {
+                fontSize: '24px',
+            },
+            successIcon: {
+                fontSize: '100px',
+                marginBottom: '30px',
+            },
+            linkContainer: {
+                background: 'rgba(212, 175, 55, 0.1)',
+                border: '2px solid #D4AF37',
+                borderRadius: '20px',
+                padding: '30px 40px',
+                marginBottom: '30px',
+                textAlign: 'center',
+                maxWidth: '600px',
+                width: '100%',
+            },
+            linkLabel: {
+                fontSize: '18px',
+                color: '#999',
+                marginBottom: '15px',
+            },
+            linkBox: {
+                background: 'rgba(0, 0, 0, 0.4)',
+                padding: '15px',
+                borderRadius: '10px',
+                marginBottom: '15px',
+                maxHeight: '100px',
+                overflowY: 'auto',
+            },
+            linkText: {
+                fontSize: '14px',
+                color: '#D4AF37',
+                fontFamily: "'Courier New', monospace",
+                fontWeight: '400',
+                wordBreak: 'break-all',
+                lineHeight: '1.4',
+            },
+            copyButton: {
+                padding: '12px 25px',
+                background: 'rgba(212, 175, 55, 0.2)',
+                border: '1px solid #D4AF37',
+                borderRadius: '10px',
+                color: '#D4AF37',
+                cursor: 'pointer',
+                fontSize: '16px',
+            },
+            shareText: {
+                fontSize: '20px',
+                color: '#999',
+                textAlign: 'center',
+                lineHeight: '1.8',
+                marginBottom: '20px',
+            },
+            highlight: {
+                color: '#D4AF37',
+                fontWeight: 'bold',
+            },
+            messageHeader: {
+                textAlign: 'center',
+                marginBottom: '50px',
+            },
+            fromLabel: {
+                fontSize: '18px',
+                color: '#999',
+                marginBottom: '10px',
+            },
+            appName: {
+                fontSize: '28px',
+                color: '#D4AF37',
+                fontWeight: 'bold',
+            },
+            questionContainer: {
+                textAlign: 'center',
+                background: 'rgba(212, 175, 55, 0.05)',
+                padding: '60px 40px',
+                borderRadius: '30px',
+                border: '2px solid #D4AF37',
+                maxWidth: '600px',
+            },
+            questionText: {
+                fontSize: '48px',
+                color: '#D4AF37',
+                marginBottom: '50px',
+                lineHeight: '1.4',
+                textShadow: '0 0 20px rgba(212, 175, 55, 0.3)',
+            },
+            loveButtons: {
+                display: 'flex',
+                gap: '25px',
+                justifyContent: 'center',
+                flexWrap: 'wrap',
+            },
+            yesButton: {
+                padding: '20px 60px',
+                fontSize: '26px',
+                background: 'linear-gradient(135deg, #D4AF37 0%, #F4E4A6 100%)',
+                color: '#000',
+                border: 'none',
+                borderRadius: '50px',
+                cursor: 'pointer',
+                fontFamily: "'Playfair Display', serif",
+                fontWeight: 'bold',
+                boxShadow: '0 8px 25px rgba(212, 175, 55, 0.5)',
+            },
+            noButton: {
+                padding: '20px 60px',
+                fontSize: '26px',
+                background: 'rgba(100, 100, 100, 0.2)',
+                color: '#666',
+                border: '2px solid #666',
+                borderRadius: '50px',
+                cursor: 'pointer',
+                fontFamily: "'Playfair Display', serif",
+            },
+            noHiddenText: {
+                marginTop: '30px',
+                fontSize: '22px',
+                color: '#D4AF37',
+                fontStyle: 'italic',
+            },
+            messageCard: {
+                background: 'rgba(212, 175, 55, 0.08)',
+                border: '2px solid #D4AF37',
+                borderRadius: '25px',
+                padding: '50px 40px',
+                maxWidth: '700px',
+                textAlign: 'center',
+                marginBottom: '30px',
+            },
+            messageNumber: {
+                fontSize: '16px',
+                color: '#999',
+                marginBottom: '25px',
+                textTransform: 'uppercase',
+                letterSpacing: '2px',
+            },
+            messageContent: {
+                fontSize: '24px',
+                color: '#F4E4A6',
+                lineHeight: '1.8',
+                fontFamily: "'Crimson Text', serif",
+                fontStyle: 'italic',
+                marginBottom: '35px',
+                textAlign: 'left',
+            },
+            signature: {
+                fontSize: '20px',
+                color: '#999',
+                fontFamily: "'Crimson Text', serif",
+                fontStyle: 'italic',
+            },
+            senderSignature: {
+                fontSize: '26px',
+                color: '#D4AF37',
+                fontWeight: '600',
+                display: 'block',
+                marginTop: '10px',
+            },
+            finalCard: {
+                background: 'rgba(212, 175, 55, 0.08)',
+                border: '2px solid #D4AF37',
+                borderRadius: '25px',
+                padding: '50px 40px',
+                maxWidth: '700px',
+                textAlign: 'center',
+                marginBottom: '40px',
+            },
+            finalImageContainer: {
+                position: 'relative',
+                marginBottom: '35px',
+            },
+            finalImage: {
+                width: '100%',
+                maxWidth: '500px',
+                maxHeight: '400px',
+                objectFit: 'cover',
+                borderRadius: '20px',
+                border: '3px solid #D4AF37',
+            },
+            imageOverlay: {
+                position: 'absolute',
+                top: '20px',
+                right: '20px',
+                fontSize: '50px',
+            },
+            logoContainerFinal: {
+                width: '150px',
+                height: '150px',
+                background: 'linear-gradient(135deg, #D4AF37 0%, #F4E4A6 100%)',
+                borderRadius: '50%',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                margin: '0 auto 35px',
+                boxShadow: '0 10px 40px rgba(212, 175, 55, 0.5)',
+            },
+            logoTextLarge: {
+                fontSize: '80px',
+                fontWeight: '900',
+                color: '#000',
+            },
+            finalMessage: {
+                fontSize: '26px',
+                color: '#F4E4A6',
+                lineHeight: '1.8',
+                fontFamily: "'Crimson Text', serif",
+                fontStyle: 'italic',
+                marginBottom: '35px',
+                textAlign: 'left',
+            },
+            finalSignature: {
+                fontSize: '22px',
+                color: '#999',
+                fontFamily: "'Crimson Text', serif",
+                fontStyle: 'italic',
+            },
+            finalActions: {
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '20px',
+                alignItems: 'center',
+            },
+            twitterButton: {
+                padding: '15px 35px',
+                background: '#1DA1F2',
+                color: 'white',
+                textDecoration: 'none',
+                borderRadius: '50px',
+                fontSize: '18px',
+                fontFamily: "'Playfair Display', serif",
+                boxShadow: '0 5px 20px rgba(29, 161, 242, 0.3)',
+                display: 'inline-block',
+            },
+            footer: {
+                marginTop: '60px',
+                textAlign: 'center',
+            },
+            footerLogo: {
+                width: '60px',
+                height: '60px',
+                background: 'linear-gradient(135deg, #D4AF37 0%, #F4E4A6 100%)',
+                borderRadius: '50%',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                margin: '0 auto 15px',
+                fontSize: '35px',
+                fontWeight: '900',
+                color: '#000',
+            },
+            footerText: {
+                fontSize: '16px',
+                color: '#666',
+            },
+        };
+
+        ReactDOM.render(<ZinnhubLoveApp />, document.getElementById('root'));
+    </script>
+</body>
+</html>
